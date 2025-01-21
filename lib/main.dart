@@ -19,48 +19,86 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  String dropdownValue = 'Рубли';
+  double inputTextFieldValue = 0.0;
+  String inputDropdownValue = 'Рубли';
+  String outputDropdownValue = 'Рубли';
+  String convertedValue = "Финальное число";
   static const List<String> dropdownItems = [
     'Рубли',
     'Доллары',
-    'Письки бобра'
+    'Евро',
+    'Письки бобровые'
   ];
 
-  dynamic convert(from, to, fromValue, toValue) {
-    if(from == 'usd') {
+  /*
+    •	USD → RUB: 75.0
+    •	EUR → RUB: 90.0
+    •	EUR → USD: 1.2
+    •	USD → EUR: 0.83
+  */
+
+  dynamic convert(from, to, inputValue) {
+    if(from == 'Доллары') {
      switch (to) {
-       case 'rub': {
+       case 'Рубли': {
         //todo: из доллара в рубли
+         setState(() {
+           convertedValue = (inputValue * 75).toString();
+         });
        }
-       case 'eur': {
+       case 'Евро': {
          //todo: из доллара в евро
+         setState(() {
+           convertedValue = (inputValue * 0.83).toString();
+         });
        }
-       case 'usd': {
+       case 'Доллары': {
          //todo: из доллара в доллары (вернуть изначальное значение)
+         setState(() {
+           convertedValue = inputValue.toString();
+         });
        }
      }
-    } else if (from == 'eur') {
+    } else if (from == 'Евро') {
       switch (to) {
-        case 'rub': {
+        case 'Рубли': {
           //todo: из евро в рубли
+          setState(() {
+            convertedValue = (inputValue * 90).toString();
+          });
         }
-        case 'eur': {
+        case 'Евро': {
           //todo: из евро в евро (вернуть изначальное значение)
+          setState(() {
+            convertedValue = inputValue.toString();
+          });
         }
-        case 'usd': {
+        case 'Доллары': {
           //todo: из евро в доллары
+          setState(() {
+            convertedValue = (inputValue * 1.2).toString();
+          });
         }
       }
-    } else if (from == 'rub') {
+    } else if (from == 'Рубли') {
       switch (to) {
-        case 'rub': {
+        case 'Рубли': {
           //todo: из рублей в рубли (вернуть изначальное значение)
+          setState(() {
+            convertedValue = inputValue.toString();
+          });
         }
-        case 'eur': {
+        case 'Евро': {
           //todo: из рублей в евро
+          setState(() {
+            convertedValue = (inputValue / 90).toString();
+          });
         }
-        case 'usd': {
+        case 'Доллары': {
           //todo: из рублей в доллары
+          setState(() {
+            convertedValue = (inputValue / 75).toString();
+          });
         }
       }
     }
@@ -71,7 +109,7 @@ class _MyAppState extends State<MyApp> {
   Widget build(BuildContext context) {
     return Center(
       child: SizedBox(
-        width: 300,
+        width: 380,
         height: 300,
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -80,11 +118,14 @@ class _MyAppState extends State<MyApp> {
               children: [
                 Expanded(
                   child: TextField(
-                    decoration: InputDecoration(labelText: 'Сумма'),
+                    decoration: InputDecoration(labelText: 'Введите число'),
+                    onChanged: (newValue){
+                        convert(inputDropdownValue, outputDropdownValue, inputTextFieldValue);
+                    },
                   ),
                 ),
                 DropdownButton<String>(
-                  value: dropdownValue,
+                  value: inputDropdownValue,
                   items: dropdownItems.map<DropdownMenuItem<String>>((String value) {
                     return DropdownMenuItem<String>(
                       value: value,
@@ -93,7 +134,7 @@ class _MyAppState extends State<MyApp> {
                   }).toList(),
                   onChanged: (selectedPosition) {
                     setState(() {
-                      dropdownValue = selectedPosition!;
+                      inputDropdownValue = selectedPosition!;
                     });
                   },
                 ),
@@ -105,10 +146,11 @@ class _MyAppState extends State<MyApp> {
             Row(
               children: [
                 Expanded(
-                  child: Text(''),
+                  // child: Text("$inputDropdownValue - $outputDropdownValue"),
+                  child: Text(convertedValue),
                 ),
                 DropdownButton<String>(
-                  value: dropdownValue,
+                  value: outputDropdownValue,
                   items: dropdownItems.map<DropdownMenuItem<String>>((String value) {
                     return DropdownMenuItem<String>(
                       value: value,
@@ -117,7 +159,7 @@ class _MyAppState extends State<MyApp> {
                   }).toList(),
                   onChanged: (selectedPosition) {
                     setState(() {
-                      dropdownValue = selectedPosition!;
+                      outputDropdownValue = selectedPosition!;
                     });
                   },
                 ),
@@ -130,3 +172,9 @@ class _MyAppState extends State<MyApp> {
   }
 }
 
+/*
+todo: Дополнительное задание (по желанию):
+todo: 1.	Добавить поддержку 3+ валют (например, GBP, JPY).
+todo: 2.	Сделать расчёт динамическим, используя открытое API для курса валют (например, ExchangeRate API).
+todo: 3.	Сохранить последнюю введённую сумму и выбранные валюты с помощью shared_preferences.
+*/
