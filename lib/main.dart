@@ -27,7 +27,6 @@ class _MyAppState extends State<MyApp> {
     'Рубли',
     'Доллары',
     'Евро',
-    'Письки бобровые'
   ];
 
   /*
@@ -41,19 +40,16 @@ class _MyAppState extends State<MyApp> {
     if(from == 'Доллары') {
      switch (to) {
        case 'Рубли': {
-        //todo: из доллара в рубли
          setState(() {
            convertedValue = (inputValue * 75).toString();
          });
        }
        case 'Евро': {
-         //todo: из доллара в евро
          setState(() {
            convertedValue = (inputValue * 0.83).toString();
          });
        }
        case 'Доллары': {
-         //todo: из доллара в доллары (вернуть изначальное значение)
          setState(() {
            convertedValue = inputValue.toString();
          });
@@ -62,19 +58,16 @@ class _MyAppState extends State<MyApp> {
     } else if (from == 'Евро') {
       switch (to) {
         case 'Рубли': {
-          //todo: из евро в рубли
           setState(() {
             convertedValue = (inputValue * 90).toString();
           });
         }
         case 'Евро': {
-          //todo: из евро в евро (вернуть изначальное значение)
           setState(() {
             convertedValue = inputValue.toString();
           });
         }
         case 'Доллары': {
-          //todo: из евро в доллары
           setState(() {
             convertedValue = (inputValue * 1.2).toString();
           });
@@ -83,19 +76,16 @@ class _MyAppState extends State<MyApp> {
     } else if (from == 'Рубли') {
       switch (to) {
         case 'Рубли': {
-          //todo: из рублей в рубли (вернуть изначальное значение)
           setState(() {
             convertedValue = inputValue.toString();
           });
         }
         case 'Евро': {
-          //todo: из рублей в евро
           setState(() {
             convertedValue = (inputValue / 90).toString();
           });
         }
         case 'Доллары': {
-          //todo: из рублей в доллары
           setState(() {
             convertedValue = (inputValue / 75).toString();
           });
@@ -119,8 +109,12 @@ class _MyAppState extends State<MyApp> {
                 Expanded(
                   child: TextField(
                     decoration: InputDecoration(labelText: 'Введите число'),
+                    keyboardType: TextInputType.number,
                     onChanged: (newValue){
+                      setState(() {
+                        inputTextFieldValue = double.tryParse(newValue)!;
                         convert(inputDropdownValue, outputDropdownValue, inputTextFieldValue);
+                      });
                     },
                   ),
                 ),
@@ -140,9 +134,9 @@ class _MyAppState extends State<MyApp> {
                 ),
               ],
             ),
-            
+
             SizedBox(height: 16),
-            
+
             Row(
               children: [
                 Expanded(
