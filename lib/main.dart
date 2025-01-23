@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
   runApp(
@@ -19,81 +20,77 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  double inputTextFieldValue = 0.0;
+  late TextEditingController _controller;
+  String convertedValue = "Финальное число";
   String inputDropdownValue = 'Рубли';
   String outputDropdownValue = 'Рубли';
-  String convertedValue = "Финальное число";
+
   static const List<String> dropdownItems = [
     'Рубли',
     'Доллары',
     'Евро',
   ];
 
-  /*
-    •	USD → RUB: 75.0
-    •	EUR → RUB: 90.0
-    •	EUR → USD: 1.2
-    •	USD → EUR: 0.83
-  */
+  @override
+  void initState() {
+    super.initState();
+    _controller = TextEditingController();
+    _loadData();
+  }
 
-  dynamic convert(from, to, inputValue) {
-    if(from == 'Доллары') {
-     switch (to) {
-       case 'Рубли': {
-         setState(() {
-           convertedValue = (inputValue * 75).toString();
-         });
-       }
-       case 'Евро': {
-         setState(() {
-           convertedValue = (inputValue * 0.83).toString();
-         });
-       }
-       case 'Доллары': {
-         setState(() {
-           convertedValue = inputValue.toString();
-         });
-       }
-     }
+  Future<void> _loadData() async {
+    final prefs = await SharedPreferences.getInstance();
+    double? loadedValue = prefs.getDouble('textFieldValue');
+    if (loadedValue != null) {
+      setState(() {
+        _controller.text = loadedValue.toString(); // Устанавливаем текст в контроллер
+        convert(inputDropdownValue, outputDropdownValue, loadedValue); // Конвертируем при загрузке
+      });
+    }
+  }
+
+  Future<void> _saveData() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setDouble('textFieldValue', double.tryParse(_controller.text) ?? 0);
+  }
+
+  /// Функция для конвертации валют
+  void convert(String from, String to, double inputValue) {
+    double result = inputValue; // Начальное значение — введенное число
+
+    if (from == 'Доллары') {
+      switch (to) {
+        case 'Рубли':
+          result = inputValue * 75;
+          break;
+        case 'Евро':
+          result = inputValue * 0.83;
+          break;
+      }
     } else if (from == 'Евро') {
       switch (to) {
-        case 'Рубли': {
-          setState(() {
-            convertedValue = (inputValue * 90).toString();
-          });
-        }
-        case 'Евро': {
-          setState(() {
-            convertedValue = inputValue.toString();
-          });
-        }
-        case 'Доллары': {
-          setState(() {
-            convertedValue = (inputValue * 1.2).toString();
-          });
-        }
+        case 'Рубли':
+          result = inputValue * 90;
+          break;
+        case 'Доллары':
+          result = inputValue * 1.2;
+          break;
       }
     } else if (from == 'Рубли') {
       switch (to) {
-        case 'Рубли': {
-          setState(() {
-            convertedValue = inputValue.toString();
-          });
-        }
-        case 'Евро': {
-          setState(() {
-            convertedValue = (inputValue / 90).toString();
-          });
-        }
-        case 'Доллары': {
-          setState(() {
-            convertedValue = (inputValue / 75).toString();
-          });
-        }
+        case 'Доллары':
+          result = inputValue / 75;
+          break;
+        case 'Евро':
+          result = inputValue / 90;
+          break;
       }
     }
+
+    setState(() {
+      convertedValue = result.toStringAsFixed(2); // Округляем до двух знаков после запятой
+    });
   }
-  double firstValue = 0.0;
 
   @override
   Widget build(BuildContext context) {
@@ -108,13 +105,15 @@ class _MyAppState extends State<MyApp> {
               children: [
                 Expanded(
                   child: TextField(
+                    controller: _controller, // Используем контроллер
                     decoration: InputDecoration(labelText: 'Введите число'),
                     keyboardType: TextInputType.number,
-                    onChanged: (newValue){
-                      setState(() {
-                        inputTextFieldValue = double.tryParse(newValue)!;
-                        convert(inputDropdownValue, outputDropdownValue, inputTextFieldValue);
-                      });
+                    onChanged: (newValue) {
+                      double? inputValue = double.tryParse(newValue);
+                      if (inputValue != null) {
+                        convert(inputDropdownValue, outputDropdownValue, inputValue); // Конвертация при вводе
+                        _saveData(); // Сохраняем данные при изменении
+                      }
                     },
                   ),
                 ),
@@ -129,18 +128,19 @@ class _MyAppState extends State<MyApp> {
                   onChanged: (selectedPosition) {
                     setState(() {
                       inputDropdownValue = selectedPosition!;
+                      double? inputValue = double.tryParse(_controller.text);
+                      if (inputValue != null) {
+                        convert(inputDropdownValue, outputDropdownValue, inputValue); // Конвертация при смене валюты
+                      }
                     });
                   },
                 ),
               ],
             ),
-
             SizedBox(height: 16),
-
             Row(
               children: [
                 Expanded(
-                  // child: Text("$inputDropdownValue - $outputDropdownValue"),
                   child: Text(convertedValue),
                 ),
                 DropdownButton<String>(
@@ -154,6 +154,10 @@ class _MyAppState extends State<MyApp> {
                   onChanged: (selectedPosition) {
                     setState(() {
                       outputDropdownValue = selectedPosition!;
+                      double? inputValue = double.tryParse(_controller.text);
+                      if (inputValue != null) {
+                        convert(inputDropdownValue, outputDropdownValue, inputValue); // Конвертация при смене валюты
+                      }
                     });
                   },
                 ),
@@ -165,10 +169,3 @@ class _MyAppState extends State<MyApp> {
     );
   }
 }
-
-/*
-todo: Дополнительное задание (по желанию):
-todo: 1.	Добавить поддержку 3+ валют (например, GBP, JPY).
-todo: 2.	Сделать расчёт динамическим, используя открытое API для курса валют (например, ExchangeRate API).
-todo: 3.	Сохранить последнюю введённую сумму и выбранные валюты с помощью shared_preferences.
-*/
