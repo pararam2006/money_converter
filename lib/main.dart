@@ -43,8 +43,8 @@ class _MyAppState extends State<MyApp> {
     double? loadedValue = prefs.getDouble('textFieldValue');
     if (loadedValue != null) {
       setState(() {
-        _controller.text = loadedValue.toString(); // Устанавливаем текст в контроллер
-        convert(inputDropdownValue, outputDropdownValue, loadedValue); // Конвертируем при загрузке
+        _controller.text = loadedValue.toString();
+        convert(inputDropdownValue, outputDropdownValue, loadedValue);
       });
     }
   }
@@ -56,7 +56,7 @@ class _MyAppState extends State<MyApp> {
 
   /// Функция для конвертации валют
   void convert(String from, String to, double inputValue) {
-    double result = inputValue; // Начальное значение — введенное число
+    double result = inputValue;
 
     if (from == 'Доллары') {
       switch (to) {
@@ -88,7 +88,7 @@ class _MyAppState extends State<MyApp> {
     }
 
     setState(() {
-      convertedValue = result.toStringAsFixed(2); // Округляем до двух знаков после запятой
+      convertedValue = result.toStringAsFixed(2);
     });
   }
 
@@ -105,14 +105,18 @@ class _MyAppState extends State<MyApp> {
               children: [
                 Expanded(
                   child: TextField(
-                    controller: _controller, // Используем контроллер
+                    controller: _controller,
                     decoration: InputDecoration(labelText: 'Введите число'),
                     keyboardType: TextInputType.number,
                     onChanged: (newValue) {
                       double? inputValue = double.tryParse(newValue);
                       if (inputValue != null) {
-                        convert(inputDropdownValue, outputDropdownValue, inputValue); // Конвертация при вводе
-                        _saveData(); // Сохраняем данные при изменении
+                        convert(inputDropdownValue, outputDropdownValue, inputValue);
+                        _saveData();
+                      } else {
+                        setState(() {
+                          convertedValue = "Введите корректное число";
+                        });
                       }
                     },
                   ),
@@ -130,7 +134,7 @@ class _MyAppState extends State<MyApp> {
                       inputDropdownValue = selectedPosition!;
                       double? inputValue = double.tryParse(_controller.text);
                       if (inputValue != null) {
-                        convert(inputDropdownValue, outputDropdownValue, inputValue); // Конвертация при смене валюты
+                        convert(inputDropdownValue, outputDropdownValue, inputValue);
                       }
                     });
                   },
@@ -156,7 +160,7 @@ class _MyAppState extends State<MyApp> {
                       outputDropdownValue = selectedPosition!;
                       double? inputValue = double.tryParse(_controller.text);
                       if (inputValue != null) {
-                        convert(inputDropdownValue, outputDropdownValue, inputValue); // Конвертация при смене валюты
+                        convert(inputDropdownValue, outputDropdownValue, inputValue);
                       }
                     });
                   },
